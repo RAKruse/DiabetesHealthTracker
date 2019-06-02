@@ -21,12 +21,11 @@ Click the "New Entry" button. The "New Entry" window will pop up. Click the "Tod
 
 If you want to put in a different date, make sure you do it with the format MM/DD/YYYY. If you don't, you can't confirm the entry.
 
-Put in an integer for Glucose. Be careful not to put in a negative, as the program is not yet set up to disallow these.
+Put in an integer for Glucose.
 
 Pick a time of day. You will not be able to confirm the entry if you don't. You may now either Confirm or continue entering information.
 
 If you enter a Meal, you must enter the Carbs. You will not be able to confirm the entry otherwise.
-Much like the Glucose, the Carbs are not yet set up to disallow negative numbers, so be careful.
 
 If you enter an Activity, you must enter both a Start Time and and End Time. Follow the HH:MM AM/PM format example shown to the right of the Start Time box.
 
@@ -45,6 +44,10 @@ Click the "Previous" button to move to the previous existing record (chronologic
 Click the "Next" button to move to the next existing record (chronologically speaking). If there is no next record, the button will do nothing.
 
 When you are done viewing/editing records, either close the "View/Edit Records" window or click Cancel. Either one will close the window.
+
+Take note of the Remove Empty Days button. This button will remove from the user's data all Days that have no Records.
+By default, this happens when files are opened or closed. This button is here in case it needs to be done during runtime.
+I do not recommend using this button unless the Display Averages page isn't working as expected after moving all Records from the latest dates to earlier dates.
 
 If you are done, and someone else wishes to use the tracker, click "Log Out" to save your changes and be taken to the Log In screen.
 
