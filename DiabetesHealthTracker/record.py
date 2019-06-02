@@ -24,8 +24,13 @@ class Record:
         :param activity_end_time: time
         :param mood: string
         """
+
+        if glucose < 0:
+            raise ValueError("Glucose must be nonnegative.")
         self._glucose = glucose
         self._meal = meal
+        if carbs < 0:
+            raise ValueError("Carbs must be nonnegative.")
         self._carbs = carbs
         self._activity = activity
         self._activity_start_time = activity_start_time
@@ -135,14 +140,19 @@ class Record:
         """Returns time active in minutes, as an int.
 
         :return: int"""
+        time_active_in_minutes = 0
+
+        # If there is no activity, or either of the activity times are None, do nothing and return 0.
         if self._activity == "" or \
                 self.activity_start_time is None or \
                 self.activity_end_time is None:
-            return 0
+            pass
+        # Otherwise, determine time active as (end time - start time) / number of minutes.
         else:
             time_active = self._activity_end_time - self._activity_start_time
             time_active_in_minutes = time_active / timedelta(minutes=1)
-            return time_active_in_minutes
+
+        return time_active_in_minutes
 
     def __eq__(self, other):
         """Returns true if two Record objects have the same values.
@@ -160,13 +170,20 @@ class Record:
     def __str__(self):
         """Returns a string representation of the Record."""
 
-        val = "Glucose: " + str(self.glucose) + "\nMeal: " + str(self.meal) + "\nCarbs: " + str(self.carbs) + \
-                                "\nActivity: " + self.activity
-        if self.activity_start_time is None:
+        # Add glucose, meal, carbs, and activity labels & values
+        val = "Glucose: " + str(self.glucose) + \
+              "\nMeal: " + str(self.meal) + \
+              "\nCarbs: " + str(self.carbs) + \
+              "\nActivity: " + self.activity
+
+        # Determine activity Start and End time values, then output respective labels and values.
+        if self.activity_start_time is None or self.activity_end_time is None:  # If either time is blank, no activity.
             val += "\nActivity start time: N/A" + "\nActivity end time: N/A"
         else:
+            # Otherwise, list appropriate start and end times.
             val += "\nActivity start time: " + self.activity_start_time.strftime("%I:%M %p") + \
                 "\nActivity end time: " + self.activity_end_time.strftime("%I:%M %p")
 
+        # Add a newline at the end.
         val += "\n"
         return val

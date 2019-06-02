@@ -6,9 +6,11 @@ from user import User
 from record import Record
 from day import Day
 
-_username = ""
-the_user = None
-extension = ".dbhat"
+
+# Global variables to hold the user's name, the User object, and the extension.
+_username = ""          # Used for labels and logging in/out. Used by several classes/windows.
+the_user = None         # Holds the User object. Used by several classes/windows.
+extension = ".dbhat"    # Holds the file extension for the saved binary files. Used by several classes/windows.
 
 
 class GuiInterface(tk.Tk):
@@ -25,6 +27,7 @@ class GuiInterface(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self, className="\nDiabetes Health & Activity Tracker")
 
+        # Create a container frame
         container = tk.Frame(self)
 
         container.pack(side="top", fill="both", expand=True)
@@ -32,16 +35,21 @@ class GuiInterface(tk.Tk):
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
+        # Create a dictionary of frames
         self.frames = {}
 
+        # For F in the LoginPage, CreatePage, and MainPage classes:
         for F in (LoginPage, CreatePage, MainPage):
 
+            # Create a frame of the appropriate kind
             frame = F(container, self)
 
+            # Add this frame to the dictionary
             self.frames[F] = frame
 
             frame.grid(row=0, column=0, sticky="nsew")
 
+        # Show the login frame
         self.show_frame(LoginPage)
 
     def show_frame(self, cont):
@@ -58,11 +66,14 @@ class GuiInterface(tk.Tk):
         global _username
         global extension
 
+        # If the_user exists, remove all empty days, open their file, write to the file, and close the file.
         if the_user is not None:
-            userfile = open(_username.replace(" ","") + extension, "wb+")
+            the_user._cleanup_empty_days()
+            userfile = open(_username.replace(" ", "") + extension, "wb+")
             pickle.dump(the_user, userfile)
             userfile.close()
 
+        # Close the GUI.
         self.destroy()
 
     def update(self):
@@ -82,11 +93,19 @@ class LoginPage(tk.Frame):
     # I did add everything else myself.
 
     def __init__(self, parent, controller):
+        """
+        :param parent: The controller frame from a GuiInterface object.
+        :param controller: The GuiInterface object itself.
+        """
         tk.Frame.__init__(self, parent)
+
+        # Add user entry label and associated entry box.
         login_label = tk.Label(self, text="Enter username: ")
         login_label.grid(row=0, column=0)
         login_entry = tk.Entry(self)
         login_entry.grid(row=0, column=1)
+
+        # Add login button
         login_button = tk.Button(self, text="Log In", command=lambda: self.check_login(login_entry.get(), controller))
         login_button.grid(row=0, column=2)
 
@@ -94,20 +113,30 @@ class LoginPage(tk.Frame):
         """Checks to see if the user's file already exists. Opens appropriate frame based on this.
 
         :param username: string
-        :param controller: I don't know. I think the GuiInterface class object from before.
+        :param controller: a GuiInterface object.
         """
 
         global the_user
         global _username
         global extension
 
+        # Set the global _username variable to the entered username
         _username = username
+
+        # If there is already a file for that user...
         if os.path.isfile(_username.replace(" ", "") + extension):
-            userfile = open(_username + extension, "rb")
+            # ... Open the file, read data from it into the_user, and close the file.
+            userfile = open(_username.replace(" ", "") + extension, "rb")
             the_user = pickle.load(userfile)
             userfile.close()
+
+            # Remove empty days from the user's data.
             the_user._update_days()
+
+            # Show the Main frame on the window.
             controller.show_frame(MainPage)
+
+        # Otherwise, show the Create File frame on the window.
         else:
             controller.show_frame(CreatePage)
 
@@ -122,23 +151,37 @@ class CreatePage(tk.Frame):
     # I did add all additional things myself.
 
     global _username
-    global extension
 
     def __init__(self, parent, controller):
+        """
+        :param parent: The controller frame from a GuiInterface object.
+        :param controller: The GuiInterface object itself.
+        """
         tk.Frame.__init__(self, parent)
+
+        # Add label to explain lack of file.
         self.create_account_label = tk.Label(self, text="File for " + _username + " not found! Create an account?")
         self.create_account_label.grid(row=0)
+
+        # Add "Yes" and "No" buttons.
+
+        # If user picks "No", head back to the Login frame.
         no_button = tk.Button(self, text="No", command=lambda: controller.show_frame(LoginPage))
         no_button.grid(row=1, column=0)
+
+        # If user picks "Yes", call self.create_file to make a new User and head to the Main Page frame.
         yes_button = tk.Button(self, text="Yes", command=lambda: self.create_file(controller))
         yes_button.grid(row=1, column=2)
 
     def create_file(self, controller):
         global the_user
-        the_user = User(_username)
+
+        # Create a user, and head to the Main Page frame.
+        the_user = User(_username.replace(" ", ""))
         controller.show_frame(MainPage)
 
     def update(self):
+        # Update label with _username's value. Happens every .1 seconds.
         self.create_account_label['text'] = "File for " + _username + " not found! Create an account?"
 
 
@@ -148,8 +191,13 @@ class MainPage(tk.Frame):
     # The basic skeleton for this class was primarily taken from the examples shown at
     # https://pythonprogramming.net/change-show-new-frame-tkinter/
     # I do not deserve credit for figuring that part out.
+    # I did do all the rest of the code.
 
     def __init__(self, parent, controller):
+        """
+        :param parent: The controller frame from a GuiInterface object.
+        :param controller: The GuiInterface object itself.
+        """
         global _username
         tk.Frame.__init__(self, parent)
 
@@ -178,9 +226,18 @@ class MainPage(tk.Frame):
         self.averages_entry_box.insert(0, "0")
         tk.Label(self, text=" days").grid(row=3, column=3, sticky="w")
 
+        # Create and place Remove Empty Days button
+        remove_empty_days = tk.Button(self, text="Remove Empty Days", command=lambda: self.cleanup_empty_days())
+        remove_empty_days.grid(row=4, column=3, sticky="ew")
+
         # Set instance variables for current day and current record to None
         self.current_day = None
         self.current_record = None
+
+    def cleanup_empty_days(self):
+        """Removes Days with no Records from the user's list of Days."""
+        global the_user
+        the_user._cleanup_empty_days()
 
     def log_out(self, controller):
         """Logs the user out. Returns to the Login frame."""
@@ -189,6 +246,7 @@ class MainPage(tk.Frame):
 
         # Open user's file and write to it.
         userfile = open(_username.replace(" ", "") + extension, "wb+")
+        the_user._cleanup_empty_days()
         pickle.dump(the_user, userfile)
         userfile.close()
 
@@ -205,15 +263,18 @@ class MainPage(tk.Frame):
         """Opens a new window to enter to enter a new Record."""
         n_entry = self._new_and_view_base("New Entry")
 
+        # Add button to set date entry box to today's date
         today_button = tk.Button(n_entry, text="Today", command=lambda: self._today_in_box(n_entry))
-        today_button.grid(row=0, column=2, sticky="nsew")
+        today_button.grid(row=0, column=3, sticky="ew")
 
+        # Add button to cancel entry (works the same as closing the window)
         cancel_button = tk.Button(n_entry, text="Cancel", command=lambda: n_entry.destroy())
         cancel_button.grid(row=9, column=2, sticky="nsew")
 
-        confirm_button = tk.Button(n_entry, text="Confirm", command=lambda:
+        # Add a button to confirm submission of the entry. Closes the window if submission was successful.
+        confirm_button = tk.Button(n_entry, text="Confirm & Close", command=lambda:
                                    self.add_record(n_entry.time_variable.get(), n_entry))
-        confirm_button.grid(row=9, column=2, sticky="nsew")
+        confirm_button.grid(row=9, column=1, sticky="nsew", columnspan=2)
 
     def _today_in_box(self, new_entry_window):
         """Places today's date in the new_entry_window's date_entry_box.
@@ -230,21 +291,31 @@ class MainPage(tk.Frame):
         :return: Record
         """
 
+        # Get glucose data from glucose entry box
         glucose = int(record_window.glucose_entry_box.get())
+
+        # If meal was empty, set carbs to 0
         if record_window.meal_entry_box.get() == "":
             carbs = 0
+
+        # Otherwise, get carbs from carbs entry box
         else:
             carbs = int(record_window.carbs_entry_box.get())
+
+        # If activity was not empty, get activity start and end time from respective entry boxes
         if record_window.activity_entry_box.get() != "":
             activity_start = datetime.datetime.strptime(record_window.activity_start_entry_box.get(), "%I:%M %p")
             activity_end = datetime.datetime.strptime(record_window.activity_end_entry_box.get(), "%I:%M %p")
+
+        # Otherwise, set activity start and end times to None
         else:
             activity_start = None
             activity_end = None
 
+        # Create new record
         new_record = Record(glucose, record_window.meal_entry_box.get(), carbs,
-                               record_window.activity_entry_box.get(), activity_start, activity_end,
-                               record_window.mood_entry_box.get())
+                            record_window.activity_entry_box.get(), activity_start, activity_end,
+                            record_window.mood_entry_box.get())
         return new_record
 
     def add_record(self, time, new_entry_window, close_on_add=True):
@@ -291,9 +362,13 @@ class MainPage(tk.Frame):
     def view_records(self):
         """Creates window that allows the user to view and edit existing records."""
         global the_user
-        self.current_day = the_user.last_day
-        self.current_record, time_of_day = self._get_last_record()
 
+        # Set current day and current record values to the last non-empty ones found
+        self.current_day = None
+        self.current_record, time_of_day = self._get_last_record()  # Also set time_of_day to the appropriate value
+                                                                    # 1) Morning, 2) Afternoon, 3) Evening
+
+        # Create base window
         view_window = self._new_and_view_base("View/Edit Records")
 
         # Add cancel button to viewing window
@@ -573,6 +648,8 @@ class MainPage(tk.Frame):
         :return: tkinter.Toplevel
         """
 
+        universal_pady = 2
+
         # Create tkinter.Toplevel window
         n_entry = tk.Toplevel(self)
         n_entry.grab_set()
@@ -581,50 +658,51 @@ class MainPage(tk.Frame):
         # Add date label and associated entry box
         tk.Label(n_entry, text="Date:").grid(row=0, column=0)
         n_entry.date_entry_box = tk.Entry(n_entry)
-        n_entry.date_entry_box.grid(row=0, column=1, pady=10)
+        n_entry.date_entry_box.grid(row=0, column=1, pady=universal_pady)
+        tk.Label(n_entry, text="EX: 03/22/2019").grid(row=0, column=2, sticky="w")  # Add example format label
 
         # Add glucose label and associated entry box
         tk.Label(n_entry, text="Glucose:").grid(row=1, column=0)
         n_entry.glucose_entry_box = tk.Entry(n_entry)
-        n_entry.glucose_entry_box.grid(row=1, column=1)
+        n_entry.glucose_entry_box.grid(row=1, column=1, pady=universal_pady)
 
         # Add meal label and associated entry box
         tk.Label(n_entry, text="Meal:").grid(row=2, column=0)
         n_entry.meal_entry_box = tk.Entry(n_entry)
-        n_entry.meal_entry_box.grid(row=2, column=1, columnspan=2, sticky="nsew")
+        n_entry.meal_entry_box.grid(row=2, column=1, columnspan=2, sticky="nsew", pady=universal_pady)
+
+        # Add Carbs label and associated entry box
+        tk.Label(n_entry, text="Carbs:").grid(row=3, column=1)
+        n_entry.carbs_entry_box = tk.Entry(n_entry)
+        n_entry.carbs_entry_box.grid(row=3, column=2, pady=universal_pady)
 
         # Add Time of day label, associated radio buttons, and associated tk.IntVar
         n_entry.time_variable = tk.IntVar()
-        tk.Label(n_entry, text="Time of day:").grid(row=3, column=0)
-        tk.Radiobutton(n_entry, text="Morning", variable=n_entry.time_variable, value=1).grid(row=3, column=1)
-        tk.Radiobutton(n_entry, text="Afternoon", variable=n_entry.time_variable, value=2).grid(row=3, column=2)
-        tk.Radiobutton(n_entry, text="Evening", variable=n_entry.time_variable, value=3).grid(row=3, column=3)
-
-        # Add Carbs label and associated entry box
-        tk.Label(n_entry, text="Carbs:").grid(row=4, column=0)
-        n_entry.carbs_entry_box = tk.Entry(n_entry)
-        n_entry.carbs_entry_box.grid(row=4, column=1)
+        tk.Label(n_entry, text="Time of day:").grid(row=4, column=0, pady=universal_pady)
+        tk.Radiobutton(n_entry, text="Morning", variable=n_entry.time_variable, value=1).grid(row=4, column=1)
+        tk.Radiobutton(n_entry, text="Afternoon", variable=n_entry.time_variable, value=2).grid(row=4, column=2)
+        tk.Radiobutton(n_entry, text="Evening", variable=n_entry.time_variable, value=3).grid(row=4, column=3)
 
         # Add Activity label and associated entry box
         tk.Label(n_entry, text="Activity:").grid(row=5, column=0)
         n_entry.activity_entry_box = tk.Entry(n_entry)
-        n_entry.activity_entry_box.grid(row=5, column=1)
+        n_entry.activity_entry_box.grid(row=5, column=1, pady=universal_pady)
 
         # Add activity Start time label and associated entry box
         tk.Label(n_entry, text="Start time:").grid(row=6, column=1)
         n_entry.activity_start_entry_box = tk.Entry(n_entry)
-        n_entry.activity_start_entry_box.grid(row=6, column=2)
-        tk.Label(n_entry, text="EX: 12:43 PM").grid(row=6, column=3) # Add example format label
+        n_entry.activity_start_entry_box.grid(row=6, column=2, pady=universal_pady)
+        tk.Label(n_entry, text="EX: 12:43 PM").grid(row=6, column=3)    # Add example format label
 
         # Add activity End time label and associated entry box
         tk.Label(n_entry, text="End time:").grid(row=7, column=1)
         n_entry.activity_end_entry_box = tk.Entry(n_entry)
-        n_entry.activity_end_entry_box.grid(row=7, column=2)
+        n_entry.activity_end_entry_box.grid(row=7, column=2, pady=universal_pady)
 
         # Add Mood label and associated entry box
         tk.Label(n_entry, text="Mood:").grid(row=8, column=0)
         n_entry.mood_entry_box = tk.Entry(n_entry)
-        n_entry.mood_entry_box.grid(row=8, column=1)
+        n_entry.mood_entry_box.grid(row=8, column=1, pady=universal_pady)
 
         # Return created Toplevel object to use as a template
         return n_entry

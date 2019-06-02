@@ -101,7 +101,7 @@ class Day:
 
     def get_total_glucose(self) -> int:
         """Returns the sum of all glucose readings for that day.
-        Useful for finding averages.
+        Used for finding averages.
 
         :return: int"""
         total_glucose = 0
@@ -213,6 +213,6 @@ class Day:
         # If there is no _afternoon_record attribute...
         if not hasattr(self, '_afternoon_record') and hasattr(self, '_night_record'):
             self._afternoon_record = self._evening_record   # Create _afternoon_record attribute and set it to
-                                                            # _evening_record's value.
+                                                            # evening_record's value.
             self._evening_record = self._night_record       # Set _evening_record to _night_record's value.
             delattr(self, '_night_record')                  # Delete the _night_record attribute.
