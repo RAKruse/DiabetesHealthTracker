@@ -5,9 +5,12 @@ from user import User
 from record import Record
 from day import Day
 
-# TODO: Docstrings.
 
 def console_interface():
+    """Top-level function for console interface.
+
+    Handles user creation, user login, and quitting.
+    Responsible for loading and saving binary files."""
     done_with_program = False
     QUIT = "QUIT"
     extension = ".dbhat"
@@ -20,6 +23,7 @@ def console_interface():
             userfile = open(username+extension, "rb")
             the_user = pickle.load(userfile)
             userfile.close()
+            the_user._update_days()
             done_with_program = console_main_menu(the_user)
             userfile = open(username+extension, "wb")
             pickle.dump(the_user, userfile)
@@ -32,9 +36,17 @@ def console_interface():
                 done_with_program = console_main_menu(the_user)
                 userfile = open(username+extension, "wb+")
                 pickle.dump(the_user, userfile)
+                userfile.close()
 
 
 def console_main_menu(a_user) -> bool:
+    """Main menu of the console interface. Called by top-level function.
+
+    User may choose to add or view/edit records, calculate averages, quit, or just log out.
+
+    :param a_user: User
+    :return: bool
+    """
     QUIT = 5
     choice = 0
     while choice != QUIT:
@@ -61,6 +73,11 @@ def console_main_menu(a_user) -> bool:
 
 
 def console_view_averages(a_user):
+    """Displays the averages and ratings of the user's glucose, carbs,
+    missed meals, and activity over the last user-entered number of days.
+
+    :param a_user: User
+    """
     if a_user.first_day is None:
         print("No records found. Averages unavailable.\n")
     else:
@@ -83,6 +100,11 @@ def console_view_averages(a_user):
 
 
 def console_view_records(a_user):
+    """Allows the user to view records one day at a time.
+    Calls console_choose_record_to_edit methood if edits are to be made.
+
+    :param a_user: User
+    """
     current_day = a_user.last_day
     QUIT = 4
     choice = 0
@@ -95,7 +117,7 @@ def console_view_records(a_user):
             print("1. Previous day")
             print("2. Edit a record")
             print("3. Next day")
-            print("4. Quit")
+            print("4. Back")
 
             choice = int(input("\nEnter number: "))
             while choice < 1 or choice > 4:
@@ -119,11 +141,15 @@ def console_view_records(a_user):
 
 
 def console_choose_record_to_edit(a_day):
+    """Lets the user choose which record to edit.
+
+    :param a_day: Day
+    """
     QUIT = 4
 
     print("1. Morning record")
-    print("2. Evening record")
-    print("3. Night record")
+    print("2. Afternoon record")
+    print("3. Evening record")
     print("4. Back")
 
     choice = int(input("\nEnter number: "))
@@ -134,14 +160,19 @@ def console_choose_record_to_edit(a_day):
     if choice == 1:
         console_edit_record(a_day.morning_record)
     elif choice == 2:
-        console_edit_record(a_day.evening_record)
+        console_edit_record(a_day.afternoon_record)
     elif choice == 3:
-        console_edit_record(a_day.night_record)
+        console_edit_record(a_day.evening_record)
     else:
         return
 
 
 def console_edit_record(a_record):
+    """Allows the user to choose and edit parts of a record.
+    Unable to edit the date or time of day.
+
+    :param a_record: Record
+    """
     QUIT = 5
     choice = 0
 
@@ -188,6 +219,10 @@ def console_edit_record(a_record):
 
 
 def console_add_record(a_user):
+    """Allows the user to add a Record to a day. Calls the console_create_record function to do so.
+
+    :param a_user: User
+    """
     good_format = False
     while not good_format:
         date_string = input("Enter date for record (MM/DD/YYYY, 0 for today: ")
@@ -210,9 +245,9 @@ def console_add_record(a_user):
 
     print("Add record for:")
     print("1. Morning")
-    print("2. Evening")
-    print("3. Night")
-    print("4. Quit")
+    print("2. Afternoon")
+    print("3. Evening")
+    print("4. Back")
 
     choice = int(input("\nEnter number: "))
 
@@ -224,12 +259,16 @@ def console_add_record(a_user):
         if choice == 1:
             current_day.morning_record = console_create_record()
         elif choice == 2:
-            current_day.evening_record = console_create_record()
+            current_day.afternoon_record = console_create_record()
         else:
-            current_day.night_record = console_create_record()
+            current_day.evening_record = console_create_record()
 
 
 def console_create_record() -> Record:
+    """Allows the user to create a Record.
+
+    :return: Record
+    """
     glucose = int(input("Enter glucose: "))
     meal = input("Enter meal (0 for none): ")
     if meal != "0":

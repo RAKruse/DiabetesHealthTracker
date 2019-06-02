@@ -4,9 +4,57 @@ Diabetes Health and Activity Tracker (School project)
 This is meant to be a glucose, carbs, activity, and mood log for diabetic persons. One in particular, but others if it's helpful, I guess.
 The unique feature added is the ability to average values over the last arbitrary number of days.
 
-Instructions:
+GUI Instructions:
 
 Open the project and run main_interface.py
+
+The GUI will now open. It's functional, but not pretty.
+
+Enter your name into the entry box, and click the "Log In" button.
+
+If you did not already have a file, you will see that the window changed to explain this. It will ask if you want to create a file.
+Click "Yes" if you would like to do so and continue, or "No" to go back to the Log In screen.
+
+If you did have a file, or you clicked "Yes" on the Create Account screen, you will enter the main screen.
+
+Click the "New Entry" button. The "New Entry" window will pop up. Click the "Today" button to put today's date in the Date box.
+
+If you want to put in a different date, make sure you do it with the format MM/DD/YYYY. If you don't, you can't confirm the entry.
+
+Put in an integer for Glucose. Be careful not to put in a negative, as the program is not yet set up to disallow these.
+
+Pick a time of day. You will not be able to confirm the entry if you don't. You may now either Confirm or continue entering information.
+
+If you enter a Meal, you must enter the Carbs. You will not be able to confirm the entry otherwise.
+Much like the Glucose, the Carbs are not yet set up to disallow negative numbers, so be careful.
+
+If you enter an Activity, you must enter both a Start Time and and End Time. Follow the HH:MM AM/PM format example shown to the right of the Start Time box.
+
+Enter your mood.
+
+If you did not earlier, click Confirm. Unless there is an error in the data, the New Entry window will close.
+
+Create a few more entries. Click the box on the main screen and input a positive integer. Click the "Compute Averages" button.
+
+The "__ day average" window will pop up, where __ is the number entered. Look at the stats, then close the "__ day average" menu.
+
+Click the View/Edit Records button. By default, you will see the latest record chronologically.
+If any of this information is incorrect, change it, and then click the "Save Changes" button.
+Be careful with this, as it will overwrite any record that already takes up that Date and Time of day, and delete the incorrect record at the position you were just at.
+Click the "Previous" button to move to the previous existing record (chronologically speaking). If there is no prior record, the button will do nothing.
+Click the "Next" button to move to the next existing record (chronologically speaking). If there is no next record, the button will do nothing.
+
+When you are done viewing/editing records, either close the "View/Edit Records" window or click Cancel. Either one will close the window.
+
+If you are done, and someone else wishes to use the tracker, click "Log Out" to save your changes and be taken to the Log In screen.
+
+If you are done, and nobody else wishes to use the tracker at this time, you may close the window. Your changes will be saved automatically, and the program will close.
+
+CLI Instructions:
+
+Open the project, specifically, main_interface.py
+
+Uncomment line 11, then comment lines 12 through 15. Now run the project.
 
 This will start up a CLI for the project.
 
@@ -63,4 +111,4 @@ Enter 2 from the main menu. Check out the records you've entered. Try moving bac
 
 When you are done, enter 5 on the main menu. Your file is now saved, and the program will exit.
 
-This is very much a work in progress. The final result will use a GUI instead of a CLI.
+This is very much a work in progress.
